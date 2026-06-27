@@ -2,6 +2,18 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
+import os
+
+# এনভায়রনমেন্ট থেকে ডাটা লোড করা
+GOOGLE_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+DISCORD_ID = os.environ.get('DISCORD_CLIENT_ID')
+DISCORD_SECRET = os.environ.get('DISCORD_CLIENT_SECRET')
+DISCORD_REDIRECT = os.environ.get('DISCORD_REDIRECT_URI')
+
+# এরপর লগইন রাউটে আপনি এগুলো এভাবেই ব্যবহার করতে পারবেন:
+# requests.post(discord_token_url, data={'client_id': DISCORD_ID, ...})
 
 app = Flask(__name__)
 CORS(app)  # ফ্লাটার অ্যাপ যাতে কোনো ঝামেলা ছাড়া সার্ভারে রিকোয়েস্ট পাঠাতে পারে
