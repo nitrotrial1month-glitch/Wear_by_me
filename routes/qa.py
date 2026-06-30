@@ -50,3 +50,22 @@ def get_qa(product_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
       
+# ইউজারের নিজের করা সব প্রশ্ন দেখার API
+@qa_bp.route('/api/qa/user/<user_name>', methods=['GET'])
+def get_user_qa(user_name):
+    try:
+        cursor = db['qa'].find({"user_name": user_name}).sort("createdAt", -1)
+        qa_list = []
+        for doc in cursor:
+            qa_list.append({
+                "id": str(doc['_id']),
+                "product_id": doc.get('product_id', ''),
+                "question": doc.get('question', ''),
+                "answer": doc.get('answer', ''),
+                "is_answered": doc.get('is_answered', False),
+                "date": doc.get('createdAt').strftime("%Y-%m-%d") if doc.get('createdAt') else ""
+            })
+        return jsonify({"status": "success", "qa_list": qa_list}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
