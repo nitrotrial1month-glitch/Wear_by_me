@@ -49,4 +49,21 @@ def get_reviews(product_id):
         return jsonify({"status": "success", "reviews": reviews}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-      
+      # ইউজারের নিজের দেওয়া সব রিভিউ দেখার API
+@reviews_bp.route('/api/reviews/user/<user_name>', methods=['GET'])
+def get_user_reviews(user_name):
+    try:
+        cursor = db['reviews'].find({"user_name": user_name}).sort("createdAt", -1)
+        reviews = []
+        for doc in cursor:
+            reviews.append({
+                "id": str(doc['_id']),
+                "product_id": doc.get('product_id', ''),
+                "rating": doc.get('rating', 0),
+                "comment": doc.get('comment', ''),
+                "date": doc.get('createdAt').strftime("%Y-%m-%d") if doc.get('createdAt') else ""
+            })
+        return jsonify({"status": "success", "reviews": reviews}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
