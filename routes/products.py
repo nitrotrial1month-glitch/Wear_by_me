@@ -106,4 +106,36 @@ def get_my_products():
         return jsonify({"status": "success", "products": my_products}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+        # ==========================================
+# 🛒 ৪. সেলারের রিয়েল লাইভ অর্ডার দেখার API
+# ==========================================
+@products_bp.route('/api/seller/orders', methods=['GET'])
+def get_seller_orders():
+    try:
+        wbm_s_id = request.args.get('wbm_s_id')
+        if not wbm_s_id:
+            return jsonify({"status": "error", "message": "WBM_S_ID required!"}), 400
+
+        # MongoDB তে 'orders' নামের কালেকশন থেকে ডেটা খুঁজবে
+        # (বায়ার অ্যাপ থেকে অর্ডার আসলে সেটা এই কালেকশনে সেভ হবে)
+        cursor = db['orders'].find({"items.wbm_s_id": wbm_s_id}).sort("order_date", -1)
+        
+        my_orders = []
+        for doc in cursor:
+            # শুধু এই নির্দিষ্ট সেলারের আইটেমগুলো ফিল্টার করা হচ্ছে (যাতে অন্য সেলারের প্রোডাক্ট না চলে আসে)
+            seller_items = [item for item in doc.get('items', []) if item.get('wbm_s_id') == wbm_s_id]
+            
+            if seller_items:
+                my_orders.append({
+                    "order_id": str(doc.get('order_id', doc['_id'])),
+                    "buyer_name": doc.get('buyer_name', 'Unknown Buyer'),
+                    "address": doc.get('address', 'No Address Provided'),
+                    "status": doc.get('status', 'Pending'),
+                    "items": seller_items,
+                    "order_date": doc.get('order_date', '')
+                })
+                
+        return jsonify({"status": "success", "orders": my_orders}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
         
