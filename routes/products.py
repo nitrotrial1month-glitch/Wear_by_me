@@ -95,4 +95,43 @@ def add_product():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+# ==========================================
+# 📦 ৩. সেলারের নিজস্ব প্রোডাক্ট দেখার API (হোমপেজের জন্য)
+# ==========================================
+@products_bp.route('/api/seller/my_products', methods=['GET'])
+def get_my_products():
+    try:
+        seller_id = request.args.get('seller_id')
+        if not seller_id:
+            return jsonify({"status": "error", "message": "Seller ID required!"}), 400
+            
+        products_collection = db['products']
+        # শুধু এই সেলারের প্রোডাক্টগুলো লেটেস্ট আপলোড অনুযায়ী আনা হচ্ছে
+        cursor = products_collection.find({"seller_id": seller_id}).sort("upload_date", -1)
+        
+        my_products = []
+        for doc in cursor:
+            # ক্লাউডিনারি থেকে প্রথম ছবিটা বের করা
+            image_url = ""
+            variants = doc.get("colors_and_media", [])
+            if variants and len(variants) > 0:
+                images = variants[0].get("images", [])
+                if images and len(images) > 0:
+                    image_url = images[0]
+
+            my_products.append({
+                "product_id": doc.get('product_id', ''),
+                "name": doc.get('name', ''),
+                "price": doc.get('price', 0),
+                "stock": doc.get('stock', 0),
+                "status": doc.get('status', 'Active'),
+                "image": image_url
+            })
+            
+        return jsonify({"status": "success", "products": my_products}), 200
+        
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
         
