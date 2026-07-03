@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from database import db, generate_unique_id
+from bson.objectid import ObjectId
 import re
 import datetime
 
@@ -139,3 +140,38 @@ def get_seller_orders():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
         
+# 🛒 ৫. প্রোডাক্ট কুইক আপডেট (Price & Stock)
+@products_bp.route('/api/seller/update_product', methods=['POST'])
+def update_product():
+    try:
+        data = request.json
+        db['products'].update_one(
+            {"_id": ObjectId(data['product_id'])},
+            {"$set": {"price": float(data['price']), "stock": int(data['stock'])}}
+        )
+        return jsonify({"status": "success", "message": "Product Updated!"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# 🛒 ৬. প্রোডাক্ট ডিলিট
+@products_bp.route('/api/seller/delete_product', methods=['POST'])
+def delete_product():
+    try:
+        data = request.json
+        db['products'].delete_one({"_id": ObjectId(data['product_id'])})
+        return jsonify({"status": "success", "message": "Product Deleted!"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# 🛡️ ৭. WBM Ensure অ্যাপ্লাই
+@products_bp.route('/api/seller/apply_ensure', methods=['POST'])
+def apply_ensure():
+    try:
+        data = request.json
+        db['products'].update_one(
+            {"_id": ObjectId(data['product_id'])},
+            {"$set": {"ensure_status": "Applied (Pending Verification)"}}
+        )
+        return jsonify({"status": "success", "message": "Applied for WBM Ensure!"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500 
