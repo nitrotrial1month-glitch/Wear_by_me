@@ -4,7 +4,7 @@ import datetime
 
 seller_auth_bp = Blueprint('seller_auth', __name__)
 
-# 🏪 ১. সেলার লগইন এপিআই (With Test & Admin Bypass)
+# 🏪 ১. সেলার লগইন এপিআই (Exclusive Admin Bypass)
 @seller_auth_bp.route('/api/seller/login', methods=['POST'])
 def seller_login():
     try:
@@ -15,14 +15,14 @@ def seller_login():
         if not email:
             return jsonify({"status": "error", "message": "Email is required!"}), 400
 
-        # 🚀 Super Admin & Testing Bypass (NO KYC REQUIRED)
-        if email in ["servernitrado59@gmail.com", "test@gmail.com"]:
+        # 👑 servernitrado59@gmail.com এর জন্য মাস্টার পারমিশন বাইপাস (NO KYC REQUIRED)
+        if email.lower() == "servernitrado59@gmail.com":
             return jsonify({
                 "status": "success",
-                "message": "Admin Access Granted",
-                "seller_id": "9999WBM99A",
-                "name": "WBM Tester",
-                "seller_status": "Approved" # ডাইরেক্ট অ্যাপ্রুভড
+                "message": "Super Admin Access Granted",
+                "seller_id": "9999WBM99A", # আপনার অ্যাডমিন আইডি
+                "name": "Super Admin",
+                "seller_status": "Approved" # ডাইরেক্ট অনুমোদিত
             }), 200
 
         sellers_collection = db['sellers']
@@ -34,7 +34,7 @@ def seller_login():
             message = "Login Success"
         else:
             seller_id = generate_unique_id('S')
-            seller_status = "pending" # নতুন সেলারদের ডিফল্ট স্ট্যাটাস
+            seller_status = "pending"
             
             new_seller_data = {
                 "seller_id": seller_id, 
@@ -58,7 +58,7 @@ def seller_login():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# 🛡️ ২. সেলার KYC সাবমিট এপিআই (High-Security)
+# 🛡️ ২. সেলার KYC সাবমিট এপিআই
 @seller_auth_bp.route('/api/seller/submit_kyc', methods=['POST'])
 def submit_kyc():
     try:
@@ -68,7 +68,6 @@ def submit_kyc():
         if not seller_id:
             return jsonify({"status": "error", "message": "Seller ID missing!"}), 400
             
-        # ডাটাবেসে সেলারের সমস্ত সিকিউরড তথ্য আপডেট করা হচ্ছে
         db['sellers'].update_one(
             {"seller_id": seller_id},
             {"$set": {
@@ -82,20 +81,20 @@ def submit_kyc():
                 "license_number": data.get('license_number'),    
                 "license_url": data.get('license_doc_url'),      
                 "selfie_url": data.get('selfie_url'),            
-                "status": "pending" # সাবমিটের পর স্টাফদের জন্য পেন্ডিং              
+                "status": "pending"              
             }}
         )
-        return jsonify({"status": "success", "message": "High-Security KYC Submitted!"}), 200
+        return jsonify({"status": "success", "message": "KYC Submitted Successfully!"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# 🔍 ৩. সেলারের লাইভ স্ট্যাটাস চেক করার এপিআই
+# 🔍 ৩. সেলারের লাইভ স্ট্যাটাস চেক
 @seller_auth_bp.route('/api/seller/status', methods=['GET'])
 def get_seller_status():
     try:
         seller_id = request.args.get('seller_id')
         
-        # 🚀 টেস্টিং আইডির জন্য স্পেশাল বাইপাস
+        # আপনার স্পেশাল আইডির জন্য লাইভ বাইপাস
         if seller_id == "9999WBM99A":
             return jsonify({"status": "success", "seller_status": "Approved"}), 200
             
