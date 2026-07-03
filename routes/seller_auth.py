@@ -105,3 +105,21 @@ def get_seller_status():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
         
+# 👤 ৪. সেলার প্রোফাইল আপডেট
+@seller_auth_bp.route('/api/seller/update_profile', methods=['POST'])
+def update_profile():
+    try:
+        data = request.json
+        db['sellers'].update_one(
+            {"seller_id": data['seller_id']},
+            {"$set": {
+                "business_name": data.get('business_name'),
+                "address": data.get('address'),
+                "payout_upi": data.get('payout_upi'),
+                "license_number": data.get('license_number')
+            }}
+        )
+        return jsonify({"status": "success", "message": "Profile Updated Successfully!"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
