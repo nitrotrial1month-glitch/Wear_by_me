@@ -175,3 +175,22 @@ def apply_ensure():
         return jsonify({"status": "success", "message": "Applied for WBM Ensure!"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500 
+
+# 🛒 ৮. প্রোডাক্ট আপলোড (Add Product) API
+@products_bp.route('/api/seller/add_product', methods=['POST'])
+def add_product():
+    try:
+        data = request.get_json()
+        
+        # ডাটাবেসে (products কালেকশনে) প্রোডাক্টটি সরাসরি ইনসার্ট করা হচ্ছে
+        result = db['products'].insert_one(data)
+        
+        return jsonify({
+            "status": "success", 
+            "message": "Product saved to database successfully!",
+            "product_id": str(result.inserted_id)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
